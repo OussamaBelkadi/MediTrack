@@ -1,6 +1,7 @@
 package os.patientservice.service;
 
 import org.springframework.stereotype.Service;
+import os.patientservice.dto.PatientRequestDTO;
 import os.patientservice.dto.PatientResponseDTO;
 import os.patientservice.model.Patient;
 import os.patientservice.repository.PatientRepository;
@@ -19,5 +20,10 @@ public class PatientService {
         return patients.stream()
                 .map(PatientMapper::toPatientResponseDTO)
                 .collect(Collectors.toList());
+    }
+    public PatientResponseDTO addPatient(PatientRequestDTO patientRequestDTO) {
+        Patient patient = PatientMapper.toPatient(patientRequestDTO);
+        Patient savedPatient = patientRepository.save(patient);
+        return PatientMapper.toPatientResponseDTO(savedPatient);
     }
 }

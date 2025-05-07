@@ -31,4 +31,10 @@ public class GlobalExceptionHandler {
         log.warn("Email address exists {}", ex.getMessage());
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
+
+    @ExceptionHandler(PatientNotFoundException.class)
+    public ResponseEntity<String> handlePatientNotFoundException(EmailAlreadyExistsException ex) {
+        log.warn("Patient with id {} is not found", ex.getMessage());
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
 }

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import os.patientservice.dto.PatientRequestDTO;
 import os.patientservice.dto.PatientResponseDTO;
 import os.patientservice.exception.EmailAlreadyExistsException;
+import os.patientservice.exception.PatientNotFoundException;
 import os.patientservice.mapper.PatientMapper;
 import os.patientservice.model.Patient;
 import os.patientservice.repository.PatientRepository;
@@ -35,16 +36,22 @@ public class PatientService {
     }
 
     public PatientResponseDTO updatePatient(UUID id, PatientRequestDTO patientRequestDTO) {
-        if (patientRepository.findById(id).isEmpty()) {
-            throw new IllegalArgumentException("Patient with id " + id + " not found.");
-        } else {
-            Patient patient = PatientMapper.toPatient(patientRequestDTO);
-            if (patientRepository.existsByEmail(patient.getEmail())) {
-                throw new EmailAlreadyExistsException("Email " + patientRequestDTO.email() + " already exists.");
-            }
-            patientRepository.save(patient);
-            return PatientMapper.toPatientResponseDTO(patient);
+        Patient patient = patientRepository.findById(id).orElseThrow(() -> new PatientNotFoundException("Patient with id " + id + " not found."));
+        Patient patientData = PatientMapper.toPatient(patientRequestDTO);
+        if (patientRepository.existsByEmailAndIdNot(patientData.getEmail(), id)) {
+            throw new EmailAlreadyExistsException("Email " + patientRequestDTO.email() + " already exists.");
         }
+        patient.setName(patientData.getName());
+        patient.setAddress(patientData.getAddress());
+        patient.setEmail(patientData.getEmail());
+        patient.setDateOfBirth(patientData.getDateOfBirth());
 
+        patient = patientRepository.save(patient);
+        return PatientMapper.toPatientResponseDTO(patient);
+
+    }
+
+    public void deletePatient(UUID id) {
+        patientRepository.deleteById(id);
     }
 }
